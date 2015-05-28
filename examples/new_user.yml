@@ -1,0 +1,8 @@
+#cloud-config
+users:
+  - name: <%USERNAME%>
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh-authorized-keys:
+      - <%SSH_PUB_KEY%>
