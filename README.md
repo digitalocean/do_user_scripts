@@ -2,7 +2,7 @@ DigitalOcean User Scripts Library
 =================================
 
 This repository contains a collection of scripts that can be used to help provision
-your droplet on first boot. When creating a new Droplet, they can be provided as
+your Droplet on first boot. When creating a new Droplet, they can be provided as
 "user data."
 
 ![DigitalOcean Control Panel](https://assets.digitalocean.com/articles/metadata/user-data.png)
@@ -24,7 +24,7 @@ cloud-config files. In order to encourage simplicity and readability, it is
 highly encouraged to use the declarative cloud-config file format when possible.
 
 Each directory must contain a README.md file describing the scripts contained
-within it, including the target platform and a description any needed user
+within it, including the target platform and a description of any needed user
 input. As these scripts are not interactive, please use the standardized
-format of **`<%DESCRIPTIVE_NAME%>`** variables that should be provided by
+format of **`<%DESCRIPTIVE_NAME%>`** for variables that should be provided by
 the user before running the script. (See the `examples/` directory.)
