@@ -1,7 +1,7 @@
 DigitalOcean User Scripts Library
 =================================
 
-This repository contains a collection scripts that can be used to help provision
+This repository contains a collection of scripts that can be used to help provision
 your droplet on first boot. When creating a new Droplet, they can be provided as
 "user data."
 
