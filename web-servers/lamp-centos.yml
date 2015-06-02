@@ -1,0 +1,18 @@
+#cloud-config
+packages:
+  - httpd
+  - mariadb-server
+  - mariadb
+  - php
+  - php-mysql
+write_files:
+  - path: /var/www/html/info.php
+    content: |
+      <?php
+      phpinfo();
+      ?>
+runcmd:
+  - systemctl start httpd.service
+  - systemctl enable httpd.service
+  - systemctl start mariadb
+  - systemctl enable mariadb.service
