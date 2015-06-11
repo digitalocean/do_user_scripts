@@ -1,4 +1,4 @@
 CoreOS Scripts
 ===========
 
-The scripts in this directory are targetted at CoreOS
+The scripts in this directory are targeted at CoreOS

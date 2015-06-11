@@ -1,4 +1,4 @@
 Fedora 22 Scripts
 ===========
 
-The scripts in this directory are targetted at Fedora 22
+The scripts in this directory are targeted at Fedora 22

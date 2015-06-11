@@ -8,6 +8,8 @@
 # Swap file size
 # example swapsize="1G"
 swapsize="<%SWAP_FILE_SIZE%>"
+
+
 fallocate -l $swapsize /swapfile;
 chmod 600 /swapfile;
 mkswap /swapfile;
