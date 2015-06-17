@@ -1,0 +1,26 @@
+#cloud-config
+package_upgrade: true
+packages:
+  - tomcat
+  - tomcat-webapps
+  - tomcat-admin-webapps
+  - tomcat-docs-webapp
+  - tomcat-javadoc
+write_files:
+  - path: /home/root/tomcat-users.xml
+    content: |
+      <?xml version='1.0' encoding='utf-8'?>
+      <tomcat-users>
+          <user username="admin" password="%PASS%" roles="manager-gui,admin-gui"/>
+      </tomcat-users>
+runcmd:
+  # Set random Tomcat admin password.
+  - TOMCATPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
+  - sed -ie "s/%PASS%/$TOMCATPASS/" /home/root/tomcat-users.xml
+  - echo "Tomcat Username  -  admin" > /root/tomcat
+  - echo "Tomcat Password  -  $TOMCATPASS" >> /root/tomcat
+  - PUBLIC_IPV4=`curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address`
+  - echo -e "\nAccess the managment interface at http://$PUBLIC_IPV4:8080/manager/html" >> /root/tomcat
+  - mv /home/root/tomcat-users.xml /usr/share/tomcat/conf/tomcat-users.xml
+  - systemctl start tomcat
+  - systemctl enable tomcat
