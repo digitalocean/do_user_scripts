@@ -28,3 +28,9 @@ within it, including the target platform and a description of any needed user
 input. As these scripts are not interactive, please use the standardized
 format of **`<%DESCRIPTIVE_NAME%>`** for variables that should be provided by
 the user before running the script. (See the `examples/` directory.)
+
+Feedback
+--------
+
+This project is an experiment, and it won't be successful without your feedback.
+Let us know what you think by [opening an issue here on GitHub](https://github.com/digitalocean/do_user_scripts/issues).
