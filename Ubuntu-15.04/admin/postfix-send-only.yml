@@ -1,0 +1,10 @@
+#cloud-config
+apt_update: true
+package_upgrade: true
+packages:
+  - mailutils
+runcmd:
+  - sed -i 's/inet_interfaces = all/inet_interfaces = loopback-only/' /etc/postfix/main.cf
+  - service postfix restart
+# Uncomment to send test email when configuration is complete.
+#  - echo "Your server is now configured and ready for use." | mail -s "Server configuration complete" <%EMAIL_ADDR%>
