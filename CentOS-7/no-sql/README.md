@@ -7,3 +7,9 @@ mongodb.yml
 ---------------
 
 Installs the latest MongoDB release from their offical repositories.
+
+
+redis.yml
+---------------
+
+Installs the latest Redis from source. By default, it is bound to localhost. An init script is installed to `/etc/init.d/redis_6379`.
