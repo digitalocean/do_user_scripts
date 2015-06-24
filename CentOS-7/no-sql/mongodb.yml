@@ -1,0 +1,14 @@
+#cloud-config
+yum_repos:
+    mongodb-org-3.0:
+        baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.0/$basearch
+        enabled: 1
+        # Unforunately, RPMs are not currently signed https://jira.mongodb.org/browse/SERVER-8770
+        gpgcheck: 0
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL
+        name: Extra Packages for Enterprise Linux 5 - Testing
+packages:
+  - mongodb-org
+runcmd:
+  - service mongod start
+  - chkconfig mongod on

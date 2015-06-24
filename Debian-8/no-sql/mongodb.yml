@@ -1,0 +1,9 @@
+#cloud-config
+apt_sources:
+  # Enable MongoDB repository
+  - source: deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main
+    keyid: 7F0CEB10
+    filename: mongodb.list
+apt_update: true
+packages:
+  - mongodb-org
