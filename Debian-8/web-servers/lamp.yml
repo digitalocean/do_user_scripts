@@ -16,4 +16,4 @@ write_files:
       ?>
 runcmd:
   - sed -ie "s/index.html index.cgi index.pl index.php/index.php index.html index.cgi index.pl/" /etc/apache2/mods-enabled/dir.conf
-  - service apache restart
+  - systemctl restart apache2
