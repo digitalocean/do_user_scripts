@@ -1,9 +1,9 @@
 #cloud-config
 apt_sources:
   # Enable Docker repository
-  - source: deb https://get.docker.com/ubuntu docker main
-    keyid: 36A1D7869245C8950F966E92D8576A8BA88D21E9
+  - source: deb https://apt.dockerproject.org/repo ubuntu-trusty main
+    keyid: 58118E89F3A912897C070ADBF76221572C52609D
     filename: docker.list
 apt_update: true
 packages:
-  - lxc-docker
+  - docker-engine
