@@ -5,8 +5,9 @@
 # This script will install and configure WordPress on
 # an Ubuntu 14.04 droplet
 # Generate root and wordpress mysql passwords
-rootmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
-wpmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
+rootmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev | tr -dc 'a-zA-Z0-9'`;
+wpmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev | tr -dc 'a-zA-Z0-9'`;
+
 # Write passwords to file
 echo "MySQL Passwords for this droplet " > /etc/motd.tail;
 echo "-----------------------------------" >> /etc/motd.tail;
