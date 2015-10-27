@@ -91,6 +91,7 @@ runcmd:
   - sed -ie "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php.ini
   - sed -ie "s|listen = 127.0.0.1:9000|listen = /var/run/php-fpm/php-fpm.sock|" /etc/php-fpm.d/www.conf
   - cp -Rf /tmp/wordpress/* /var/www/html/.
+  - chown -Rf nginx.nginx /var/www/html/*
   - rm -f /var/www/html/index.html
   - rm -Rf /tmp/wordpress*
   - systemctl start php-fpm
