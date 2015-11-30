@@ -73,8 +73,8 @@ runcmd:
   - wget https://wordpress.org/latest.zip -O /tmp/wordpress.zip
   - unzip /tmp/wordpress.zip -d /tmp/
   - cp /tmp/wordpress/wp-config-sample.php /tmp/wordpress/wp-config.php
-  - ROOTMYSQLPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev``
-  - WPMYSQLPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev``
+  - ROOTMYSQLPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
+  - WPMYSQLPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
   - echo "Root MySQL Password $ROOTMYSQLPASS" > /root/passwords.txt
   - echo "Wordpress MySQL Password $WPMYSQLPASS" >> /root/passwords.txt
   - sed -ie "s/database_name_here/wordpress/" /tmp/wordpress/wp-config.php
