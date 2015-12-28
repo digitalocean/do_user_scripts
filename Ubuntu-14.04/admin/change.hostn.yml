@@ -1,0 +1,3 @@
+#cloud-config 
+hostname: <%HOSTNAME%>
+manage_etc_hosts: true

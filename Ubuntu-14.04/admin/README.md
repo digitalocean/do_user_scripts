@@ -1,6 +1,16 @@
 Admin Scripts
 =============
 
+change.hostn.yml
+----------------
+
+Example of changing the Droplet's hostname using a cloud-config file. Useful for cases where you want to name the Droplet something different than the hostname.
+
+**Required input**:
+
+ * `<%HOSTNAME%>` - The hostname for your server.
+
+
 postfix-send-only.yml
 ---------------------
 
