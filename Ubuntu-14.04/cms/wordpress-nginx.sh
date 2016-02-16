@@ -24,6 +24,7 @@ apt-get -q -y install mysql-server
 apt-get update;
 apt-get -y upgrade;
 # Install Nginx/MySQL
+apt-get -y install debconf-utils
 echo mysql-server mysql-server/root_password password  | sudo debconf-set-selections
 echo mysql-server mysql-server/root_password_again password  | sudo debconf-set-selections
 sudo apt-get install mysql-server
