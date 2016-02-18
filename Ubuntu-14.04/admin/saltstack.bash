@@ -11,7 +11,7 @@
 # need to set the salt master's IP address below. After, just paste this
 # script into the DigitalOcean creation page.
 ##
-#
+# Made by Zachary DuBois (https://zacharydubois.me) - Under MIT.
 ##
 
 
