@@ -18,3 +18,13 @@ This script will create and activate a swap file at `/swapfile` on your new drop
 **Required input**:
 
 * `<%SWAP_FILE_SIZE%>` - The size of the swap file to create. E.g. "1G"
+
+saltstack.bash
+--------------
+
+This script upgrades the system to the latest packages, installs salt-minion, and configures the master server. Please read the top of the file for more information.
+
+**Required input**:
+
+* `<%HOSTNAME%>` - The 'nice name' for your server. Not the FQDN.
+* `<%MASTER%>` - The IP address for the salt master server. Either local or public will work.
