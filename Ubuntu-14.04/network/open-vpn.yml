@@ -53,7 +53,7 @@ runcmd:
   - cat /etc/openvpn/ca.crt >> /etc/openvpn/easy-rsa/keys/client.ovpn
   - echo "</ca>" >> /etc/openvpn/easy-rsa/keys/client.ovpn
   - echo "<cert>" >> /etc/openvpn/easy-rsa/keys/client.ovpn
-  - cat /etc/openvpn/easy-rsa/keys/client1.crt >> /etc/openvpn/easy-rsa/keys/client.ovpn
+  - openssl x509 -outform PEM -in /etc/openvpn/easy-rsa/keys/client1.crt >> /etc/openvpn/easy-rsa/keys/client.ovpn
   - echo "</cert>" >> /etc/openvpn/easy-rsa/keys/client.ovpn
   - echo "<key>" >> /etc/openvpn/easy-rsa/keys/client.ovpn
   - cat /etc/openvpn/easy-rsa/keys/client1.key >> /etc/openvpn/easy-rsa/keys/client.ovpn
