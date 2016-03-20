@@ -65,27 +65,27 @@ write_files:
       
   - path: /etc/php-fpm.d/www.conf
     content: |
-			[www]
+      [www]
       
-			listen = /var/run/php-fpm/php-fpm.sock
-			listen.allowed_clients = 127.0.0.1
+      listen = /var/run/php-fpm/php-fpm.sock
+      listen.allowed_clients = 127.0.0.1
       
-			user = nginx
-			group = nginx
+      user = nginx
+      group = nginx
       
-			pm = ondemand
-			pm.max_children = 50
-			pm.start_servers = 5
-			pm.process_idle_timeout = 10s
-			pm.max_requests = 200
-			 
-			slowlog = /var/log/php-fpm/www-slow.log
-			 
-			php_admin_value[error_log] = /var/log/php-fpm/www-error.log
-			php_admin_flag[log_errors] = on
+      pm = ondemand
+      pm.max_children = 50
+      pm.start_servers = 5
+      pm.process_idle_timeout = 10s
+      pm.max_requests = 200
       
-			php_value[session.save_handler] = files
-			php_value[session.save_path] = /var/lib/php/session
+      slowlog = /var/log/php-fpm/www-slow.log
+      
+      php_admin_value[error_log] = /var/log/php-fpm/www-error.log
+      php_admin_flag[log_errors] = on
+      
+      php_value[session.save_handler] = files
+      php_value[session.save_path] = /var/lib/php/session
 
   - path: /var/www/html/info.php
     content: |
