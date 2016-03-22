@@ -90,6 +90,8 @@ runcmd:
   - mkdir -p /var/www/html
   - sed -ie "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php.ini
   - sed -ie "s|listen = 127.0.0.1:9000|listen = /var/run/php-fpm/php-fpm.sock|" /etc/php-fpm.d/www.conf
+  - sed -ie "s|user = apache|user = nginx|" /etc/php-fpm.d/www.conf
+  - sed -ie "s|group = apache|group = nginx|" /etc/php-fpm.d/www.conf
   - cp -Rf /tmp/wordpress/* /var/www/html/.
   - chown -Rf nginx.nginx /var/www/html/*
   - rm -f /var/www/html/index.html
