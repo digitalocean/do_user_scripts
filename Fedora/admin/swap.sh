@@ -8,8 +8,9 @@
 #  Fedora 22
 #  Fedora 23
 # 
-# There are two modes:
-#   * automatic mode
+# <%MODE%> Please replace using "automatic" or "manual" mode.
+#
+#   * automatic mode:
 #
 #     Based Red Hat Enterprise Linux Administration Guide
 #     Swap should equal 2x physical RAM for up to 2 GB of physical RAM,
@@ -20,7 +21,7 @@
 #     ╔════════════════════════╦═════════════════════════╗
 #     ║(M) Amount of RAM in G  ║ (S) Amount of swap in G ║
 #     ╠════════════════════════╬═════════════════════════╣
-#     ║ M < 2G	               ║ S = M * 2G              ║
+#     ║ M < 2G                 ║ S = M * 2G              ║
 #     ╠════════════════════════╬═════════════════════════╣
 #     ║ 2G  < M < 32G          ║ S = M + 2G              ║
 #     ╠════════════════════════╬═════════════════════════╣
@@ -28,10 +29,10 @@
 #     ╚════════════════════════╩═════════════════════════╝
 # 
 #
-#   * manual mode
+#   * manual mode:
 #     * Replace <%SWAP_FILE_SIZE%> with your custom swap size
 
-mode=automatic
+mode=<%MODE%>
 
 function automatic()
 {
@@ -48,12 +49,12 @@ function automatic()
    echo "...recommended size: $swapsize"
  elif [[ $ram_size -ge $min ]] && [[ $ram_size -lt $max ]]
  then
-   echo "The RAM size is equal to 2G and less than 32GB"
+   echo "The RAM size is equal to 2G and less than 32G"
    swapsize=$(( $ram_size + $min ))
    echo "...recommended size: $swapsize"
  elif [[ $ram_size -ge $max ]]
  then
-   echo "The RAM size is greater than 32GB"
+   echo "The RAM size is greater than 32G"
    swapsize=$max
    echo "...recommended size: $swapsize"
  fi
