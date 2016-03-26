@@ -1,0 +1,25 @@
+#cloud-config
+packages:
+  - httpd
+  - mariadb-server
+  - mariadb
+  - php
+  - php-mysql
+  - php-gd
+  - php-mcrypt
+write_files:
+  - path: /var/www/html/info.php
+    content: |
+      <?php
+      phpinfo();
+      ?>
+runcmd:
+  - 'chown apache:apache /var/www/html/info.php'
+  - echo "ServerSignature Off" >> /etc/httpd/conf/httpd.conf
+  - echo "ServerTokens Prod" >> /etc/httpd/conf/httpd.conf
+  - sed -ie "s/expose_php = On/expose_php = Off/" /etc/php.ini
+  - systemctl start httpd.service
+  - systemctl enable httpd.service
+  - systemctl start mariadb
+  - systemctl enable mariadb.service
+  
