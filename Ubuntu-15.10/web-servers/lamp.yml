@@ -1,0 +1,19 @@
+#cloud-config
+apt_update: true
+packages:
+  - apache2
+  - php5-mysql
+  - mysql-server
+  - libapache2-mod-php5
+  - php5-mcrypt
+  - php5-gd
+  - php5-curl
+write_files:
+  - path: /var/www/html/info.php
+    content: |
+      <?php
+      phpinfo();
+      ?>
+runcmd:
+  - sed -ie "s/index.html index.cgi index.pl index.php/index.php index.html index.cgi index.pl/" /etc/apache2/mods-enabled/dir.conf
+  - service apache2 restart
