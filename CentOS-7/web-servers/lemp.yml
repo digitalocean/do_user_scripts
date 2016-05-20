@@ -44,8 +44,8 @@ runcmd:
   - yum -y install nginx php-fpm php-mysql mariadb-server mariadb
   - mkdir -p /var/www/html
   - cp /usr/share/nginx/html/index.html /var/www/html/
-  - sed -ie "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php.ini
-  - sed -ie "s|listen = 127.0.0.1:9000|listen = /var/run/php-fpm/php-fpm.sock|" /etc/php-fpm.d/www.conf
+  - sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php.ini
+  - sed -i -e "s|listen = 127.0.0.1:9000|listen = /var/run/php-fpm/php-fpm.sock|" /etc/php-fpm.d/www.conf
   - systemctl start php-fpm
   - systemctl enable php-fpm.service
   - systemctl enable nginx.service

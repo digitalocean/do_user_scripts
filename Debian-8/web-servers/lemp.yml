@@ -50,7 +50,7 @@ write_files:
 runcmd:
   - mkdir -p /var/www/html
   - cp /usr/share/nginx/html/index.html /var/www/html/
-  - sed -ie "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php5/fpm/php.ini
+  - sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php5/fpm/php.ini
   # Ensure backwards compatible with 14.04
   - file=/etc/nginx/fastcgi.conf; if [ ! -f "$file" ]; then ln -s /etc/nginx/fastcgi_params "$file"; fi
   - service nginx restart
