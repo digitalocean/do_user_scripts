@@ -21,8 +21,8 @@ write_files:
 runcmd:
   # Configure Apache
   - php5enmod mcrypt
-  - sed -ie "s/index.html index.cgi index.pl index.php/index.php index.html index.cgi index.pl/" /etc/apache2/mods-enabled/dir.conf
-  - sed -ie "s/index.php/index.php\n\tAllowOverride\ All/" /etc/phpmyadmin/apache.conf
+  - sed -i -e "s/index.html index.cgi index.pl index.php/index.php index.html index.cgi index.pl/" /etc/apache2/mods-enabled/dir.conf
+  - sed -i -e "s/index.php/index.php\n\tAllowOverride\ All/" /etc/phpmyadmin/apache.conf
   - ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
 
   # Generate random passwords for the MySql root user and the .htaccess file

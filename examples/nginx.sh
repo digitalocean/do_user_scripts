@@ -10,7 +10,7 @@ apt-get -y install nginx
 
 # Write hostname and IP address to index.html
 mkdir -p /var/www/html
-sed -ie "s|/usr/share/nginx/html|/var/www/html|g" /etc/nginx/sites-available/default
+sed -i -e "s|/usr/share/nginx/html|/var/www/html|g" /etc/nginx/sites-available/default
 echo -e "<html><body><strong>Droplet:</strong> $HOSTNAME<br><strong>IP Address:</strong> $PUBLIC_IPV4</html></body>" \
     > /var/www/html/index.html
 service nginx restart

@@ -16,7 +16,7 @@ write_files:
 runcmd:
   # Set random Tomcat admin password.
   - TOMCATPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
-  - sed -ie "s/%PASS%/$TOMCATPASS/" /home/root/tomcat-users.xml
+  - sed -i -e "s/%PASS%/$TOMCATPASS/" /home/root/tomcat-users.xml
   - echo "Tomcat Username  -  admin" > /root/tomcat
   - echo "Tomcat Password  -  $TOMCATPASS" >> /root/tomcat
   - PUBLIC_IPV4=`curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address`

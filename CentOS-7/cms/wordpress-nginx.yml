@@ -77,9 +77,9 @@ runcmd:
   - WPMYSQLPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
   - echo "Root MySQL Password $ROOTMYSQLPASS" > /root/passwords.txt
   - echo "Wordpress MySQL Password $WPMYSQLPASS" >> /root/passwords.txt
-  - sed -ie "s/database_name_here/wordpress/" /tmp/wordpress/wp-config.php
-  - sed -ie "s/username_here/wordpress/" /tmp/wordpress/wp-config.php
-  - sed -ie "s/password_here/$WPMYSQLPASS/" /tmp/wordpress/wp-config.php
+  - sed -i -e "s/database_name_here/wordpress/" /tmp/wordpress/wp-config.php
+  - sed -i -e "s/username_here/wordpress/" /tmp/wordpress/wp-config.php
+  - sed -i -e "s/password_here/$WPMYSQLPASS/" /tmp/wordpress/wp-config.php
   - for i in `seq 1 8`; do wp_salt=$(</dev/urandom tr -dc 'a-zA-Z0-9!@#$%^&*()\-_ []{}<>~`+=,.;:/?|' | head -c 64 | sed -e 's/[\/&]/\\&/g'); sed -i "0,/put your unique phrase here/s/put your unique phrase here/$wp_salt/" /tmp/wordpress/wp-config.php; done
   - systemctl enable mariadb
   - systemctl start mariadb
@@ -88,10 +88,10 @@ runcmd:
   - /usr/bin/mysql -uroot -p$ROOTMYSQLPASS -e "CREATE USER wordpress@localhost IDENTIFIED BY '"$WPMYSQLPASS"'"
   - /usr/bin/mysql -uroot -p$ROOTMYSQLPASS -e "GRANT ALL PRIVILEGES ON wordpress.* TO wordpress@localhost"
   - mkdir -p /var/www/html
-  - sed -ie "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php.ini
-  - sed -ie "s|listen = 127.0.0.1:9000|listen = /var/run/php-fpm/php-fpm.sock|" /etc/php-fpm.d/www.conf
-  - sed -ie "s|user = apache|user = nginx|" /etc/php-fpm.d/www.conf
-  - sed -ie "s|group = apache|group = nginx|" /etc/php-fpm.d/www.conf
+  - sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php.ini
+  - sed -i -e "s|listen = 127.0.0.1:9000|listen = /var/run/php-fpm/php-fpm.sock|" /etc/php-fpm.d/www.conf
+  - sed -i -e "s|user = apache|user = nginx|" /etc/php-fpm.d/www.conf
+  - sed -i -e "s|group = apache|group = nginx|" /etc/php-fpm.d/www.conf
   - cp -Rf /tmp/wordpress/* /var/www/html/.
   - chown -Rf nginx.nginx /var/www/html/*
   - rm -f /var/www/html/index.html
