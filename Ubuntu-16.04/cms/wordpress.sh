@@ -3,13 +3,12 @@
 # Wordpress Setup Script
 #
 # This script will install and configure WordPress on
-# an Ubuntu 15.04 droplet
+# an Ubuntu 16.04 droplet
 export DEBIAN_FRONTEND=noninteractive;
 
 # Generate root and WordPress mysql passwords
 rootmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev | tr -dc 'a-zA-Z0-9'`;
 wpmysqlpass=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev | tr -dc 'a-zA-Z0-9'`;
-
 
 # Write passwords to file
 echo "Root MySQL Password: $rootmysqlpass" > /root/passwords.txt;
@@ -21,7 +20,7 @@ apt-get update;
 apt-get -y upgrade;
 
 # Install Apache/MySQL
-apt-get -y install apache2 php5 php5-mysql mysql-server mysql-client unzip;
+apt-get -y install apache2 php php-mysql libapache2-mod-php7.0 php7.0-mysql php7.0-curl php7.0-zip php7.0-json mysql-server mysql-client unzip wget;
 
 # Download and uncompress WordPress
 wget https://wordpress.org/latest.zip -O /tmp/wordpress.zip;
