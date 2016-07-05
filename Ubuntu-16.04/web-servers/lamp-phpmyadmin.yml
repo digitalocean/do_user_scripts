@@ -1,0 +1,40 @@
+#cloud-config
+apt_update: true
+package_upgrade: true
+packages:
+  - apache2
+  - apache2-utils
+  - php5-mysql
+  - mysql-server
+  - libapache2-mod-php5
+  - php5-mcrypt
+  - php5-gd
+  - php5-curl
+  - phpmyadmin
+write_files:
+  - path: /usr/share/phpmyadmin/.htaccess
+    content: |
+      AuthType Basic
+      AuthName "Restricted Files"
+      AuthUserFile /etc/phpmyadmin/.htpasswd
+      Require valid-user
+runcmd:
+  # Configure Apache
+  - php5enmod mcrypt
+  - sed -i -e "s/index.html index.cgi index.pl index.php/index.php index.html index.cgi index.pl/" /etc/apache2/mods-enabled/dir.conf
+  - sed -i -e "s/index.php/index.php\n\tAllowOverride\ All/" /etc/phpmyadmin/apache.conf
+  - ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
+
+  # Generate random passwords for the MySql root user and the .htaccess file
+  - PHPMYADMINPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
+  - MYSQLPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
+  - mysqladmin -u root -h localhost password "$MYSQLPASS"
+  - echo "[client]\npassword="$MYSQLPASS"\n" > /root/.my.cnf
+  # The .htaccess username defaults to phpmyadmin. Update the line below to change that.
+  - echo $PHPMYADMINPASS | htpasswd -c -i /etc/phpmyadmin/.htpasswd phpmyadmin
+  - echo "phpMyAdmin Password -    "$PHPMYADMINPASS"" > /root/phpmyadmin
+  - echo "MySql Password      -    ""$MYSQLPASS""" >> /root/phpmyadmin
+
+  # Enable the conf and restart Apache.
+  - a2enconf phpmyadmin.conf
+  - service apache2 restart
