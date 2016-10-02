@@ -31,6 +31,7 @@ unzip /tmp/wordpress.zip;
 /usr/bin/mysqladmin -u root -h localhost password $rootmysqlpass;
 /usr/bin/mysql -uroot -p$rootmysqlpass -e "CREATE USER wordpress@localhost IDENTIFIED BY '"$wpmysqlpass"'";
 /usr/bin/mysql -uroot -p$rootmysqlpass -e "GRANT ALL PRIVILEGES ON wordpress.* TO wordpress@localhost";
+/usr/bin/mysql -u root -p$rootmysqlpass -e "FLUSH PRIVILEGES";
 
 # Configure WordPress
 cp /tmp/wordpress/wp-config-sample.php /tmp/wordpress/wp-config.php;
