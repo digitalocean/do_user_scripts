@@ -42,6 +42,9 @@ write_files:
 runcmd:
   - rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
   - yum -y install nginx php-fpm php-mysql mariadb-server mariadb
+  - systemctl enable mariadb
+  - systemctl restart mariadb
+  - mysql_secure_installation
   - mkdir -p /var/www/html
   - cp /usr/share/nginx/html/index.html /var/www/html/
   - sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/" /etc/php.ini
