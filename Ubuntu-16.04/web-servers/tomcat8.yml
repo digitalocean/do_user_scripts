@@ -1,0 +1,29 @@
+#cloud-config
+apt_update: true
+packages:
+  - default-jdk
+  - tomcat8
+  - tomcat8-docs
+  - tomcat8-admin
+  - tomcat8-examples
+write_files:
+  - path: /etc/tomcat8/tomcat-users.xml
+    content: |
+      <?xml version='1.0' encoding='utf-8'?>
+      <tomcat-users xmlns="http://tomcat.apache.org/xml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+        version="1.0">
+        <user username="admin" password="%PASS%" roles="manager-gui,admin-gui"/>
+      </tomcat-users>
+runcmd:
+  # Set random Tomcat admin password.
+  - TOMCATPASS=`dd if=/dev/urandom bs=1 count=12 2>/dev/null | base64 -w 0 | rev | cut -b 2- | rev`
+  - sed -i -e "s/%PASS%/$TOMCATPASS/" /etc/tomcat8/tomcat-users.xml
+  - echo "Tomcat Username  -  admin" > /root/tomcat
+  - echo "Tomcat Password  -  $TOMCATPASS" >> /root/tomcat
+  - PUBLIC_IPV4=`curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address`
+  - echo "\nAccess the managment interface at http://$PUBLIC_IPV4:8080/manager/html" >> /root/tomcat
+  # Ensure Tomcat listens on IPv4 and optimize startup time by using a non-blocking entropy source.
+  - echo "JAVA_OPTS=\"\$JAVA_OPTS -Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Addresses=true -Djava.security.egd=file:/dev/./urandom\"" >> /etc/default/tomcat8
+  - systemctl restart tomcat8
