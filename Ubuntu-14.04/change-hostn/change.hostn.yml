@@ -1,0 +1,10 @@
+#cloud-config 
+runcmd: 
+  - newhostn="<%newhostn%>"
+  - hostn=$(cat /etc/hostname)
+  - echo "Exisitng hostname is $hostn"
+  - echo "New hostname will be $newhostn"
+  - sed -i "s/$hostn/$newhostn/g" /etc/hosts
+  - sed -i "s/$hostn/$newhostn/g" /etc/hostname
+power_state: 
+  mode: reboot 
