@@ -48,4 +48,4 @@ cp -Rf /tmp/wordpress/* /var/www/html/.;
 rm -f /var/www/html/index.html;
 chown -Rf www-data:www-data /var/www/html;
 a2enmod rewrite;
-service apache2 restart;
+systemctl restart apache2;
