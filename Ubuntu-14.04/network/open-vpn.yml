@@ -49,7 +49,7 @@ runcmd:
   - sed -i -e 's/ca ca.crt//' /etc/openvpn/easy-rsa/keys/client.ovpn
   - sed -i -e 's/cert client.crt//' /etc/openvpn/easy-rsa/keys/client.ovpn
   - sed -i -e 's/key client.key//' /etc/openvpn/easy-rsa/keys/client.ovpn
-  - sed -i -e 's/tls-auth ta.key 0//' /etc/openvpn/easy-rsa/keys/client.ovpn
+  - sed -i -e 's/tls-auth ta.key 1//' /etc/openvpn/easy-rsa/keys/client.ovpn
   - echo "<ca>" >> /etc/openvpn/easy-rsa/keys/client.ovpn
   - cat /etc/openvpn/ca.crt >> /etc/openvpn/easy-rsa/keys/client.ovpn
   - echo "</ca>" >> /etc/openvpn/easy-rsa/keys/client.ovpn
