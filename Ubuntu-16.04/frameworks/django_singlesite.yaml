@@ -1,0 +1,21 @@
+#cloud-config
+#Django and nginx on Ubuntu
+users:
+  - name: django_user
+packages:
+  - python3
+  - python3-pip
+runcmd:
+  # Install Django via pip to get latest version
+  - pip3 install django
+  # Create a blank django app at `/home/django_example`
+  - cd /home
+  - django-admin startproject django_example
+  - cd django_example
+  # Initialize the sqlite database and build the project files
+  - python3 manage.py migrate
+  - python3 manage.py
+  # We are doing this as root, make sure everything is owned by the django_user
+  - chown -R django_user:django_user /home/django_example
+  # Now you have a blank django app at `/home/django_example`
+  # You can start a dev server by running `python manage.py runserver`
