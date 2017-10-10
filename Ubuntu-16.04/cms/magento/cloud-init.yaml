@@ -1,0 +1,159 @@
+#cloud-config
+# Install latest version of Magento, nginx and mariadb on Ubuntu 16.x and enable SSL w/Let's Encrypt
+packages:
+  # nginx, the web server in front of magento
+  - nginx
+  # php7 in PHP-FPM mode (http://php.net/manual/en/install.fpm.php)
+  - php7.0-fpm
+  # php7 extensions required for Magento
+  - php7.0-mcrypt
+  - php7.0-curl
+  - php7.0-cli
+  - php7.0-mysql
+  - php7.0-gd
+  - php7.0-xsl
+  - php7.0-json
+  - php7.0-intl
+  - php-pear
+  - php7.0-dev
+  - php7.0-common
+  - php7.0-mbstring
+  - php7.0-zip
+  - php-soap
+  # curl to download Magento and additional resources
+  - libcurl3
+  - curl
+  # mariaDB (a mysql fork) as database
+  - mariadb-server
+  - mariadb-client
+  # JQ lets us quickly reference json from commandline
+  - jq
+  # composer is PHP Dependency Management
+  - composer
+runcmd:
+  # specify domain/subdomain, DO API token, MariaDB Password as env vars
+  - export DOMAIN=<%DOMAIN_NAME%>
+  - export DO_API_TOKEN=<%DO_API_TOKEN%>
+  # SUBDOMAIN will default to NAME OF THIS DROPLET, to override, replace $(...) with your subdomain  
+  - export SUBDOMAIN=$(curl -s http://169.254.169.254/metadata/v1/hostname)
+  - export MARIADB_PWD=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c10)
+  - "echo \"\nMAGENTO EXTRAS:\nMariaDB Password = $MARIADB_PWD\n(delete this by running: > /etc/motd)\" >> /etc/motd"
+  - export PUBLIC_IPV4=$(curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address)
+  - export DROPLET_ID=$(curl -s http://169.254.169.254/metadata/v1/id)
+  # owner's email via DO api (needed for letsencrypt TOS)
+  - 'export EMAIL=$(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN"  https://api.digitalocean.com/v2/account  | jq -r ".account.email")'
+  # create magento_user, add to www-data group
+  - adduser --disabled-password --gecos "" magento_user
+  - usermod -a -G www-data magento_user
+  # edit PHP settings: increase memory, execution time, turn on zlib
+  - "printf \"\n\n; Added for Magento config\nmemory_limit = 512M\nmax_execution_time = 1800\nzlib.output_compression = On\" >> /etc/php/7.0/fpm/php.ini"
+  - "printf \"\n\n; Added for Magento config\nmemory_limit = 512M\nmax_execution_time = 1800\nzlib.output_compression = On\" >> /etc/php/7.0/cli/php.ini"
+  # restart PHP-FPM to apply config changes
+  - systemctl restart php7.0-fpm
+  # configure and secure MariaDB
+  - "mysqladmin -u root password \"$MARIADB_PWD\""
+  - "mysql -u root -p\"$MARIADB_PWD\" -e \"delete from mysql.user where User='root' and Host not in ('localhost', '127.0.0.1', '::1');\""
+  - "mysql -u root -p\"$MARIADB_PWD\" -e \"delete from mysql.user where User='';\""
+  - "mysql -u root -p\"$MARIADB_PWD\" -e \"delete from mysql.db where Db='test' or Db='test\_%';\""
+  - "mysql -u root -p\"$MARIADB_PWD\" -e \"flush privileges;\""
+  # create the Magento database
+  - "mysql -u root -p\"$MARIADB_PWD\" -e \"create database magento;\""
+  - "mysql -u root -p\"$MARIADB_PWD\" -e \"create user magento_user@localhost identified by '$MARIADB_PWD';\""
+  - "mysql -u root -p\"$MARIADB_PWD\" -e \"grant all privileges on magento.* to magento_user@localhost;\""
+  - "mysql -u root -p\"$MARIADB_PWD\" -e \"flush privileges;\""
+  # get latest version of magento
+  - cd /var/www/
+  - wget $(curl -s https://api.github.com/repos/magento/magento2/releases/latest | jq -r ".tarball_url") -O magento_latest.tar.gz
+  - mkdir magento2 && tar -xzvf magento_latest.tar.gz -C magento2 --strip-components 1
+  # override default nginx config with magento's
+  - ln -s /etc/nginx/sites-available/magento /etc/nginx/sites-enabled/magento
+  - rm /etc/nginx/sites-enabled/default
+  # install certbot, update
+  - add-apt-repository ppa:certbot/certbot -y
+  - apt-get update
+  - apt install python-certbot-nginx -y
+  # add domain name to nginx config, restart it
+  - sed -i 's/server_name _;/server_name '$SUBDOMAIN"."$DOMAIN';/' /etc/nginx/sites-available/magento
+  - systemctl restart nginx
+  # create a subdomain a-record for this droplet
+  - 'curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d "{\"type\":\"A\", \"name\":\"$SUBDOMAIN\", \"data\":\"$PUBLIC_IPV4\"}" https://api.digitalocean.com/v2/domains/$DOMAIN/records'
+  # run certbot to generate ssl certs, generate dhparams
+  - certbot --nginx -n -d $SUBDOMAIN"."$DOMAIN --email $EMAIL --agree-tos --redirect --hsts
+  - sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+  # write ssl_dhparam directive to nginx config
+  - sed -i 's/server_name/ssl_dhparam \/etc\/ssl\/certs\/dhparam.pem;\n\tserver_name/' /etc/nginx/sites-available/magento
+  - sed -i 's/#include/include/' /etc/nginx/sites-available/magento
+  - sed -i 's/root /#root /' /etc/nginx/sites-available/magento
+  - systemctl restart nginx
+  # Set Magento file owner and permissions
+  - cd magento2
+  - export HOME=/root && export COMPOSER_HOME=/root
+  - composer install
+  - find var vendor pub/static pub/media app/etc -type f -exec chmod g+w {} \;
+  - find var vendor pub/static pub/media app/etc -type d -exec chmod g+ws {} \;
+  - chown -R magento_user:www-data .
+  - chmod u+x bin/magento
+write_files:
+  - path: /etc/cron.d/letsencrypt_renew
+    content: "15 3 * * * /usr/bin/certbot renew --quiet"
+  - path: /etc/nginx/sites-available/magento
+    content: |
+      upstream fastcgi_backend {
+          server  unix:/run/php/php7.0-fpm.sock;
+      }
+
+      server {
+              listen 80;
+              server_name _;
+              set $MAGE_ROOT /var/www/magento2;
+              set $MAGE_MODE developer;
+              root /var/www/html;
+              #include /var/www/magento2/nginx.conf.sample;
+      }
+  - path: /etc/cron.d/magento
+    content: |
+      * * * * * magento_user /usr/bin/php /var/www/magento2/bin/magento cron:run | grep -v "Ran jobs by schedule" >> /var/www/magento2/var/log/magento.cron.log
+      * * * * * magento_user /usr/bin/php /var/www/magento2/update/cron.php >> /var/www/magento2/var/log/update.cron.log
+      * * * * * magento_user /usr/bin/php /var/www/magento2/bin/magento setup:cron:run >> /var/www/magento2/var/log/setup.cron.log
+do_base_images: [ubuntu-16-04-x32, ubuntu-16-04-x64, ubuntu-17-04-x32, ubuntu-17-04-x64]
+readme: |
+  This script is meant to automate installation and initial configuration of Magento, nginx, mariadb, and Let's Encrypt via [cloud-init](https://www.digitalocean.com/community/tutorials/an-introduction-to-cloud-config-scripting) on an Ubuntu 16.04 or 17.04 server.
+
+
+  ## Prerequisites:
+  Before running this, you'll need to:
+  1. Configure your domain to point at DigitalOcean Nameservers
+     [ref](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-host-name-with-digitalocean)
+  2. Add your top-level domain _(domain.com, no subdomain)_ in [DigitalOcean control panel](https://cloud.digitalocean.com/networking/domains).
+  3. Replace <%YOUR_TOP_LEVEL_DOMAIN.COM%> below with your top-level domain (domain.com)
+  4. Replace <%YOUR_DIGITALOCEAN_API_KEY%> with an API token. [Ref](https://cloud.digitalocean.com/settings/api/tokens)
+  When creating the server, you'll need to use an Ubuntu 16.04 or 17.04 image with at least 1GB Memory.
+
+
+  ## Deploy Plan:
+  By pasting [cloud-init.yaml](cloud-init.yaml) into user-data section of server create page, server will automatically:
+
+  1. Install and start [nginx](https://www.digitalocean.com/community/tags/nginx)
+  2. Update DigitalOcean DNS to point a subdomain [this_server_name].[your_top_level_domain.com]
+     at public IPV4 of this server.
+  3. Install and run [Let's Encrypt](https://www.digitalocean.com/community/tags/let-s-encrypt) certbot tool to automatically generate and renew SSL
+     certificates (allowing magento to run only via HTTPS)
+  4. Install, configure and run [mariaDB](https://www.digitalocean.com/community/tags/mariadb)
+  5. Download the latest release of magento, install required packages and change required config settings.
+
+  Install takes ~4 minutes, once server is created you can SSH in and follow progress by running `tail -f /var/log/cloud-init-output.log`. Once install is finished you can go to https://[subdomain].[your-domain.com] and finish the magento configuration. For database config, you will need to specify:
+   - Database Server Host: `localhost`
+   - Database Server Username: `magento_user`
+   - Database Server Password: _Password is displayed when you login to server or in `/etc/motd`_
+   - Database Name: magento
+   - Table prefix: _leave empty_
+
+   *When setting store URL, don't forget to switch to secure httpS protocol!*
+
+
+  ## Further Reading:
+  This script builds on detailed instructions provided in the following tutorials:
+  - [Install and configure Magento on Ubuntu](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-magento-on-ubuntu-14-04)
+  - [Install Let's Encrypt (certbot) with nginx on ubuntu](https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-16-04)
+  - [Setup Magento behind an nginx reverse proxy](https://www.howtoforge.com/tutorial/how-to-install-magento-with-nginx-on-ubuntu/)
+  - You'll likely need to [configure SMTP in Magento](https://docs.nexcess.net/article/how-to-set-up-outgoing-smtp-email-for-magento.html) to send emails.
