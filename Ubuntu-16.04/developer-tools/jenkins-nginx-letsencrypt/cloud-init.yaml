@@ -1,0 +1,77 @@
+#cloud-config
+#Install Jenkins on Ubuntu 16.04 x64 with SSL behind nginx proxy
+packages:
+  - nginx
+  #jq is a command-line json processor https://stedolan.github.io/jq/
+  - jq
+runcmd:
+  # start of letsencrypt process
+  - export DOMAIN=<%YOUR_TOP_LEVEL_DOMAIN.COM%>
+  - export DO_API_TOKEN=<%YOUR_DIGITALOCEAN_API_KEY%>
+  - export PUBLIC_IPV4=$(curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address)
+  - export DROPLET_ID=$(curl -s http://169.254.169.254/metadata/v1/id)
+  - export DROPLET_NAME=$(curl -s http://169.254.169.254/metadata/v1/hostname)
+  # get email for letsencrypt TOS via DO api
+  - 'export EMAIL=$(curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN"  https://api.digitalocean.com/v2/account  | jq -r ".account.email")'
+  # install certbot, update
+  - sudo add-apt-repository ppa:certbot/certbot -y
+  - sudo apt-get update
+  - sudo apt install python-certbot-nginx -y
+  # add domain name to nginx config, restart it
+  - sudo sed -i 's/server_name _;/server_name '$DROPLET_NAME"."$DOMAIN';\n\n\tclient_max_body_size 10m;\n\n\t#DHPARAM_PLACEHOLDER/' /etc/nginx/sites-available/default
+  - sudo systemctl restart nginx
+  # create a subdomain a-record for this droplet
+  - 'curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $DO_API_TOKEN" -d "{\"type\":\"A\", \"name\":\"$DROPLET_NAME\", \"data\":\"$PUBLIC_IPV4\"}" https://api.digitalocean.com/v2/domains/$DOMAIN/records'
+  - sleep 10s
+  - sudo certbot --nginx -n -d $DROPLET_NAME"."$DOMAIN --email $EMAIL --agree-tos --redirect --hsts
+  - sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+  # write ssl_dhparam directive to nginx config
+  - sudo sed -i 's/#DHPARAM_PLACEHOLDER/ssl_dhparam \/etc\/ssl\/certs\/dhparam.pem;/' /etc/nginx/sites-available/default
+  - sudo systemctl restart nginx
+  # end of letsencrypt process
+  # start of jenkins init process
+  - sudo adduser --disabled-password --gecos "" jenkins
+  - sudo adduser jenkins sudo
+  # edit nginx config to proxy to jenkins
+  - sed -i 's/^\t\ttry_files \$uri \$uri\/ =404;/include \/etc\/nginx\/proxy_params;\n\t\tproxy_pass http:\/\/localhost:8080;\n\t\tproxy_read_timeout 90s;\n\t\tproxy_redirect http:\/\/localhost:8080 https:\/\/'$DROPLET_NAME'.'$DOMAIN';/' /etc/nginx/sites-available/default
+  - sudo systemctl restart nginx
+  # add jenkins repo key
+  - wget -q -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add -
+  # add the jenkins debian package repo to our sources list
+  - echo deb http://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list
+  # run apt update to recognize new jenkins source
+  - sudo apt update -y
+  # install jenkins and dependencies, including java
+  - sudo apt install jenkins -y
+  # start jenkins
+  - sudo systemctl start jenkins
+  # update jenkins config to handle proxy
+  - sudo sed -i 's/--httpPort=\$HTTP_PORT/--httpPort=$HTTP_PORT --httpListenAddress=127.0.0.1/' /etc/default/jenkins
+  - sudo systemctl restart jenkins
+  # download the jenkins digitalocean plugin
+  - sudo wget http://updates.jenkins-ci.org/latest/digitalocean-plugin.hpi -P /var/lib/jenkins/plugins/
+write_files:
+  # letsencrypt renewal cron
+  - owner: root:root
+    path: /etc/cron.d/letsencrypt_renew
+    content: "15 3 1 * * /usr/bin/certbot renew --quiet"
+readme: |
+  This script is meant to run via [cloud-init](https://www.digitalocean.com/community/tutorials/an-introduction-to-cloud-config-scripting)
+  on an Ubuntu 16.04 or 16.10 server.
+  
+  ## Summary:
+  1. Install and run nginx
+  2. Update DigitalOcean DNS to point a subdomain [this_server_name].[your_top_level_domain.com]
+     at public IPV4 of this server.
+  3. Install and run letsencrypt certbot tool to automatically generate and renew SSL
+     certificates (allowing access via HTTPS)
+  4. Install and run latest version of Jenkins, including the DigitalOcean
+     Jenkins plugin.
+  
+  ## Prerequisites:
+  Before running this, you'll need to:
+  1. Configure your domain to point at DigitalOcean Nameservers
+     [ref](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-host-name-with-digitalocean)
+  2. Add your top-level domain _(domain.com, no subdomain)_ in DigitalOcean control panel.
+  3. Replace <%YOUR_TOP_LEVEL_DOMAIN.COM%> below with your top-level domain (domain.com)
+  4. Replace <%YOUR_DIGITALOCEAN_API_KEY%> with an API token. [Ref](https://cloud.digitalocean.com/settings/api/tokens)
