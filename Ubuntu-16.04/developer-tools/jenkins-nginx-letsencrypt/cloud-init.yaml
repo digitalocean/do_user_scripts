@@ -50,11 +50,14 @@ runcmd:
   - sudo systemctl restart jenkins
   # download the jenkins digitalocean plugin
   - sudo wget http://updates.jenkins-ci.org/latest/digitalocean-plugin.hpi -P /var/lib/jenkins/plugins/
+  - sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins
+  - sudo reboot
 write_files:
   # letsencrypt renewal cron
   - owner: root:root
     path: /etc/cron.d/letsencrypt_renew
     content: "15 3 1 * * /usr/bin/certbot renew --quiet"
+do_base_images: [ubuntu-16-04-x32, ubuntu-16-04-x64, ubuntu-17-04-x32, ubuntu-17-04-x64]
 readme: |
   This script is meant to automate installation and initial configuration of Jenkins, nginx and Let's Encrypt via [cloud-init](https://www.digitalocean.com/community/tutorials/an-introduction-to-cloud-config-scripting) on an Ubuntu 16.04 or 16.10 server.
 
@@ -78,7 +81,7 @@ readme: |
   4. Add the jenkins debian package to source list, install and start jenkins.
   5. Download the latest version of the [DigitalOcean Jenkins plugin](https://github.com/jenkinsci/digitalocean-plugin)
 
-  Install takes ~4 minutes, once server is created you can SSH in and follow progress by running `tail -f /var/log/cloud-init-output.log`. Once install is finished you can go to https://[droplet-name].[your-domain.com] and finish the jenkins configuration. You will need the jenkins install password saved at ``
+  Install takes ~4 minutes, once server is created you can SSH in and follow progress by running `tail -f /var/log/cloud-init-output.log`. Once install is finished, server will reboot and you can go to https://[droplet-name].[your-domain.com] and finish the jenkins configuration. You will need the jenkins install password saved at `/var/lib/jenkins/secrets/initialAdminPassword`
 
 
   ## Further Reading:
