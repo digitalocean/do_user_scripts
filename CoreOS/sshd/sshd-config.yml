@@ -1,0 +1,19 @@
+storage:
+  files:
+    - path: /etc/ssh/sshd_config
+      filesystem: root
+      user:
+        name: root
+      group:
+        name: root
+      mode: 0600
+      contents:
+        inline: |
+          # Use most defaults for sshd configuration.
+          UsePrivilegeSeparation sandbox
+          Subsystem sftp internal-sftp
+          UseDNS no
+
+          PermitRootLogin no
+          AllowUsers core
+          AuthenticationMethods publickey
