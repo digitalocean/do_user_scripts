@@ -1,0 +1,61 @@
+storage:
+  files:
+    - path: /etc/ssh/sshd_config
+      filesystem: root
+      user:
+        name: root
+      group:
+        name: root
+      mode: 0600
+      contents:
+        inline: |
+          # Use most defaults for sshd configuration.
+          UsePrivilegeSeparation sandbox
+          Subsystem sftp internal-sftp
+          UseDNS no
+
+          PermitRootLogin no
+          AllowUsers core
+          AuthenticationMethods publickey
+    - path: /opt/custom-provisioner
+      filesystem: root
+      user:
+        name: root
+      group:
+        name: root
+      mode: 0755
+      contents:
+        inline: |
+          #!/usr/bin/env bash
+
+          __dropin_file=/etc/systemd/system/sshd.socket.d/10-sshd-listen.conf
+          __dropin_dir="$(dirname "${__dropin_file}")"
+
+          [ -d "${__dropin_dir}" ] || mkdir -p "${__dropin_dir}"
+
+          cat >"${__dropin_file}" <<EOF
+          [Socket]
+          ListenStream=
+          ListenStream=${COREOS_DIGITALOCEAN_IPV4_PUBLIC_0}:22
+          FreeBind=true
+          EOF
+
+          systemctl daemon-reload
+          systemctl restart sshd.socket
+systemd:
+  units:
+    - name: custom-provisioner.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Custom Provisioner
+        Requires=coreos-metadata.service
+        After=coreos-metadata.service
+
+        [Service]
+        Type=oneshot
+        EnvironmentFile=/run/metadata/coreos
+        ExecStart=/opt/custom-provisioner
+
+        [Install]
+        WantedBy=multi-user.target
